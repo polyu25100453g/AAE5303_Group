@@ -22,10 +22,10 @@ We don't know coding at all, but we are expert in debugging!!!
 - **(individual) Assignment 2:** https://github.com/yourname/assignment2
 
 ### Member 3
-- **Student ID:** 25043804g
+- **Student ID:** 25043804G
 - **Name:** CHANG Jianshuo
-- **Brief Introduction:** Michael has expertise in data analysis and machine learning. He is responsible for algorithm design and performance optimization.
-- **(individual) Assignment 1:** https://github.com/yourname/assignment1
+- **Brief Introduction:** Jianshuo is an INTP who can write some code, understands data analysis, and is interested in new AI technologies and VLN. He has a lot of things he wants to do, but he’s extremely lazy—so he’s always mentally whipping himself with a little whip to get moving.
+- **(individual) Assignment 1:** https://github.com/CHANGJianshuo/AAE5303/blob/main/assignment1.md
 - **(individual) Assignment 2:** https://github.com/yourname/assignment2
 
 ## Group Projects
