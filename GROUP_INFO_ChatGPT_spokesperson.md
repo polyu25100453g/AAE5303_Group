@@ -23,10 +23,10 @@ We chose **ChatGPT_spokesperson** because we do not understand this course and a
 - **(individual) Assignment 1:** <https://github.com/taiwanhaitong-crypto/Assignment-1>
 - **(individual) Assignment 2:** <https://github.com/taiwanhaitong-crypto/Assignment-2>
 
-### 📣 Member 2 (The )
+### 📣 Member 2 (The sugar daddy of ChatGPT)
 - **Student ID:** [25041983g]
 - **Name:** [WU Yumeng]
-- **Brief Introduction:** 
+- **Brief Introduction:** Self-identified ChatGPT’s sugar daddy. Provides ChatGPT with continuous prompts, patience, and late-night attention in exchange for explanations, code, and confidence. 
 - **(individual) Assignment 1:** <https://github.com/wymmust/PolyU-AAE5303-assignment-1>
 - **(individual) Assignment 2:** <https://github.com/wymmust/assignment2>
 
