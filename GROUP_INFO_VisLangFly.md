@@ -26,7 +26,7 @@ We named it "VisLangFly" because it intuitively integrates the three core elemen
 - **Student ID:** 25046399g
 - **Name:** Shou Zhihuai
 - **Brief Introduction:** Michael has expertise in data analysis and machine learning. He is responsible for algorithm design and performance optimization.
-- **(individual) Assignment 1:** https://github.com/yourname/assignment1
+- **(individual) Assignment 1:** https://github.com/SOZHAA-1/PolyU-AAE5303-assignment-1-template/blob/main/README.md
 - **(individual) Assignment 2:** https://github.com/yourname/assignment2
 
 ## Group Projects
