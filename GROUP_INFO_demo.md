@@ -23,7 +23,7 @@
 - **Student ID:** [25072438g]
 - **Name:** [SHEN Xinyan]
 - **About Me:** [Your introduction]
-- **(individual) Assignment 1:** [GitHub repo link]
+- **(individual) Assignment 1:** [https://xinyan-web.github.io/test2/]
 - **(individual) Assignment 2:** [GitHub repo link]
 
 ## Group Projects
