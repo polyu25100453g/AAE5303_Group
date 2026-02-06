@@ -74,7 +74,7 @@ Here's what the basic structure might look like, but remember - **you can totall
 - **Student ID:** [25098413g]
 - **Name:** [ZHANG Fengyuan]
 - **About Me:** [Your introduction]
-- **(individual) Assignment 1:** [GitHub repo link]
+- **(individual) Assignment 1:** [https://github.com/Zhang123-png/PolyU-AAE5303-assignment-1-template]
 - **(individual) Assignment 2:** [GitHub repo link]
 - **Photo (Optional):** [You can add a photo link or emoji here if you want!]
 
