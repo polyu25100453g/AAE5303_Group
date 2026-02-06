@@ -4,7 +4,6 @@
 [Your creative explanation here - or skip this section if you want!]
 
 ## Team Members
-> 💡 **Tip:** Feel free to add your personal photo if you'd like! It's completely optional but can make your profile more personal. 📸
 
 ### Member 1
 - **Student ID:** [25100453g]
