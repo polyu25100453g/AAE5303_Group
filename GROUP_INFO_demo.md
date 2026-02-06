@@ -79,8 +79,8 @@ Here's what the basic structure might look like, but remember - **you can totall
 - **Photo (Optional):** [You can add a photo link or emoji here if you want!]
 
 ### Member 3
-- **Student ID:** [Your ID]
-- **Name:** [Your Name]
+- **Student ID:** [25072438g]
+- **Name:** [SHEN Xinyan]
 - **About Me:** [Your introduction]
 - **(individual) Assignment 1:** [GitHub repo link]
 - **(individual) Assignment 2:** [GitHub repo link]
