@@ -9,7 +9,7 @@
 - **Student ID:** [25100453g]
 - **Name:** [NIE Jiazheng]
 - **About Me:** [Your introduction - be as creative as you want!]
-- **(individual) Assignment 1:** [GitHub repo link]
+- **(individual) Assignment 1:** [https://github.com/polyu25100453g/PolyU-AAE5303-assignment-1]
 - **(individual) Assignment 2:** [GitHub repo link]
 - **Photo (Optional):** [You can add a photo link or emoji here if you want!]
 
