@@ -63,16 +63,16 @@ Here's what the basic structure might look like, but remember - **you can totall
 > 💡 **Tip:** Feel free to add your personal photo if you'd like! It's completely optional but can make your profile more personal. 📸
 
 ### Member 1
-- **Student ID:** [Your ID]
-- **Name:** [Your Name]
+- **Student ID:** [25100453g]
+- **Name:** [NIE Jiazheng]
 - **About Me:** [Your introduction - be as creative as you want!]
 - **(individual) Assignment 1:** [GitHub repo link]
 - **(individual) Assignment 2:** [GitHub repo link]
 - **Photo (Optional):** [You can add a photo link or emoji here if you want!]
 
 ### Member 2
-- **Student ID:** [Your ID]
-- **Name:** [Your Name]
+- **Student ID:** [25098413g]
+- **Name:** [ZHANG Fengyuan]
 - **About Me:** [Your introduction]
 - **(individual) Assignment 1:** [GitHub repo link]
 - **(individual) Assignment 2:** [GitHub repo link]
