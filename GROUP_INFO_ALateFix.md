@@ -28,6 +28,8 @@ Our name represents our journey – we may have joined late, but we always fix t
 - **Name:** YAN SHENTAO
 - **About Me:** Cursoring，Crafting，Coding.
 - **(individual) Assignment 1:** [https://github.com/shentonyan/Answers-for-AAE5303/blob/main/ENVIRONMENT_SETUP_REPORT.md](#)
+- **(individual) Assignment 2:** [GitHub repo link](#)
+- **Photo (Optional):** [You can add a photo link or emoji here if you want!]
 
 ## Group Projects
 
