@@ -26,7 +26,7 @@ The KISS principle in coding (Keep It Simple, Stupid).
 - **Student ID:** 25128392G
 - **Name:** Bailin Lu
 - **Brief Introduction:** I'm familiar with Python,C coding, aslo can do single-board computer desighn like stm32
-- **(individual) Assignment 1:** [https://github.com/yourname/assignment1](https://github.com/lubailin0408/PolyU-AAE5303-assaignment1-25128392G)
+- **(individual) Assignment 1:** https://github.com/lubailin0408/PolyU-AAE5303-assaignment1-25128392G
 - **(individual) Assignment 2:** https://github.com/yourname/assignment2
 
 ## Group Projects
