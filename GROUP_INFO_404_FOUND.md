@@ -35,7 +35,7 @@ Error:Success
 - **Student ID:** 25106011G
 - **Name:** TONG Yuru
 - **Brief Introduction:** Yuru is a 99-year-old great-grandmother，yet her enthusiasm for learning has never faded.
-- **(individual) Assignment 1:** https://github.com/billyTryToCode/assignment1
+- **(individual) Assignment 1:** [https://github.com/billyTryToCode/assignment1](https://github.com/Tong-Yuru/PolyU-AAE5303-assignment-1-template)
 - **(individual) Assignment 2:** https://github.com/billyTryToCode/assignment2
 
 ## Group Projects
