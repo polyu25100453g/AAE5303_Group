@@ -23,7 +23,7 @@
 - **Student ID:** [25072438g]
 - **Name:** [SHEN Xinyan]
 - **About Me:** [Early to bed and early to rise. ]
-- **(individual) Assignment 1:** [https://xinyan-web.github.io/test2/]
+- **(individual) Assignment 1:** [https://github.com/xinyan-web/xinyan-SHEN.git]
 - **(individual) Assignment 2:** [GitHub repo link]
 
 ## Group Projects
