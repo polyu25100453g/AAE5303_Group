@@ -23,7 +23,7 @@
 - **Name:** [Zeng Xincheng]
 - **About Me:** [Keep curious]
 - **(individual) Assignment 1:** [https://github.com/xinchengZENG/PolyU-AAE5303-assignment-1]
-- **(individual) Assignment 2:** [GitHub repo link]
+- **(individual) Assignment 2:** [https://github.com/xinchengZENG/AAE5303_assignment2_orbslam3]
 - **Photo (Optional):** [You can add a photo link or emoji here if you want!]
 
 ## Group Projects
