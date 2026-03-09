@@ -30,13 +30,13 @@ We chose **ChatGPT_spokesperson** because we do not understand this course and a
 - **(individual) Assignment 1:** <https://github.com/wymmust/PolyU-AAE5303-assignment-1>
 - **(individual) Assignment 2:** <https://github.com/wymmust/assignment2>
 
-### 📣 Member 3 (The )
+### 📣 Member 3 (The human terminal of ChatGPT)
 - **Student ID:** [25060282g]
 - **Name:** [WANG Qianlin]
 - **Brief Introduction:** The human terminal behind ChatGPT. Executes commands, fixes errors, reruns setups, and patiently follows every debugging step until things finally work. Known for endurance in environment configuration and never giving up after the fifth authentication error.
 
 - **(individual) Assignment 1:** <https://github.com/Evelyn4k4k/PolyU-AAE5303-assignment-1-template>
-- **(individual) Assignment 2:** <>
+- **(individual) Assignment 2:** <https://github.com/Evelyn4k4k/AAE5303_assignment2_orbslam3_demo->
 
 ---
 
