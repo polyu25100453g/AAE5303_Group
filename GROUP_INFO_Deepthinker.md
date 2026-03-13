@@ -17,7 +17,7 @@
 - **Name:** [ZHANG Fengyuan]
 - **About Me:** [A taciturn person. ]
 - **(individual) Assignment 1:** [https://github.com/Zhang123-png/PolyU-AAE5303-assignment-1-template]
-- **(individual) Assignment 2:** [GitHub repo link]
+- **(individual) Assignment 2:** [https://github.com/Zhang123-png/AAE5303_assignment2_orbslam3_demo-]
 
 ### Member 3
 - **Student ID:** [25072438g]
