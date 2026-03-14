@@ -10,7 +10,7 @@
 - **Name:** [NIE Jiazheng]
 - **About Me:** [He's a silent guardian... a watchful protector. A DARK KNIGHT. ]
 - **(individual) Assignment 1:** [https://github.com/polyu25100453g/PolyU-AAE5303-assignment-1]
-- **(individual) Assignment 2:** [GitHub repo link]
+- **(individual) Assignment 2:** [https://github.com/polyu25100453g/AAE5303_assignment2_orbslam3_demo-]
 
 ### Member 2
 - **Student ID:** [25098413g]
