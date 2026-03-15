@@ -24,7 +24,7 @@
 - **Name:** [SHEN Xinyan]
 - **About Me:** [Early to bed and early to rise. ]
 - **(individual) Assignment 1:** [https://github.com/xinyan-web/xinyan-SHEN.git]
-- **(individual) Assignment 2:** [GitHub repo link]
+- **(individual) Assignment 2:** [https://github.com/xinyan-web/Shenxinyan-assignment2_orbslam3_demo-]
 
 ## Group Projects
 - **(group) Final project:** [GitHub repo link]
