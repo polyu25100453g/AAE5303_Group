@@ -44,6 +44,7 @@ We chose **Bug Transporters** because it perfectly captures the reality of worki
 - **VO (Visual Odometry):** <https://github.com/Friday-1202/VO>
 - **Opensplating:** <https://github.com/Friday-1202/Opensplating>
 - **U-net:** <https://github.com/Friday-1202/U-net>
+- **Slides:** <https://github.com/Friday-1202/Slides>
 
 ---
 
