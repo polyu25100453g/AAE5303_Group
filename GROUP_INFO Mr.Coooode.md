@@ -29,5 +29,5 @@
 ## Group Projects
 - **(group) Final project:** [https://github.com/yourgroup/final-project]
 - **VO:** [https://github.com/yourgroup/vo]
-- **Opensplating:** [https://github.com/LIUXiaolu424/AAE5303_opensplat]
+- **Opensplating:** [https://github.com/LIUXiaolu424/AAE5303_OpenSplat]
 - **U-net:** [https://github.com/yourgroup/u-net]
