@@ -10,6 +10,21 @@ If you are looking for a “how to run ORB-SLAM3 without pitfalls” guide, see:
 
 - `ORB_SLAM3_TIPS.md`
 
+## ✅ Module 1 Snapshot (AMtown02)
+
+Latest Module 1 result in this repository:
+
+- **Submission file**: `module1_vo/leaderboard/submission_filled.json`
+- **Group**: `DEEPTHINKER`
+- **ATE RMSE**: `52.6138 m`
+- **RPE Trans Drift**: `2.1903 m/m`
+- **RPE Rot Drift**: `70.5280 deg/100m`
+- **Completeness**: `98.7730% (3703 / 3749)`
+
+Project repository:
+
+- `https://github.com/polyu25100453g/AAE5303_Group.git`
+
 ## 📌 Evaluation Dataset
 
 The evaluation dataset (bag / images / ground truth) is provided by the instructor.
