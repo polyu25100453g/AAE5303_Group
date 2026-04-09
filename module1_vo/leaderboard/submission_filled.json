@@ -1,10 +1,10 @@
 {
-  "group_name": "Team Alpha",
+  "group_name": "DEEPTHINKER",
   "metrics": {
     "ate_rmse_m": 52.613813292097824,
     "completeness_pct": 98.77300613496932,
     "rpe_rot_drift_deg_per_100m": 70.52801841721289,
     "rpe_trans_drift_m_per_m": 2.1902592997669896
   },
-  "project_private_repo_url": "https://github.com/yourusername/project.git"
+  "project_private_repo_url": "https://github.com/polyu25100453g/AAE5303_Group/tree/main/module1_vo"
 }
