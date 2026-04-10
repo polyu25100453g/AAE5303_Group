@@ -88,6 +88,24 @@ def class_balanced_weights(counts: np.ndarray, beta: float = 0.99) -> torch.Tens
     return torch.tensor(w, dtype=torch.float32)
 
 
+def soft_dice_loss_logits(logits: torch.Tensor, target: torch.Tensor, num_classes: int, ignore: int) -> torch.Tensor:
+    """1 - mean class Dice on valid pixels (helps boundaries / small objects)."""
+    valid = target != ignore
+    if int(valid.sum().item()) == 0:
+        return torch.zeros((), device=logits.device, dtype=logits.dtype)
+    prob = F.softmax(logits, dim=1)
+    t = target.clone()
+    t[~valid] = 0
+    oh = F.one_hot(t.clamp(min=0, max=num_classes - 1), num_classes).permute(0, 3, 1, 2).float()
+    vf = valid.unsqueeze(1).float()
+    oh = oh * vf
+    pr = prob * vf
+    inter = (pr * oh).sum(dim=(0, 2, 3))
+    union = pr.pow(2).sum(dim=(0, 2, 3)) + oh.pow(2).sum(dim=(0, 2, 3))
+    dice = (2.0 * inter + 1e-5) / (union + 1e-5)
+    return 1.0 - dice.mean()
+
+
 def ce_focal_loss(
     logits: torch.Tensor,
     target: torch.Tensor,
@@ -247,6 +265,24 @@ def parse_args() -> argparse.Namespace:
         default=18,
         help="Early stop if val mIoU does not improve for this many epochs (0 = off).",
     )
+    p.add_argument(
+        "--backbone-lr-ratio",
+        type=float,
+        default=0.1,
+        help="LR multiplier for ResNet backbone vs segmentation head (fine-tune stability).",
+    )
+    p.add_argument(
+        "--dice-weight",
+        type=float,
+        default=0.0,
+        help="If >0, add soft Dice loss on main branch (e.g. 0.2–0.5).",
+    )
+    p.add_argument(
+        "--resume",
+        type=Path,
+        default=None,
+        help="Resume from checkpoint (state_dict); continues until --epochs total.",
+    )
     return p.parse_args()
 
 
@@ -299,10 +335,33 @@ def main() -> int:
         num_workers=args.num_workers,
     )
 
-    model = deeplabv3_resnet50(weights=wts)
-    replace_deeplab_head(model, NUM_UAVSCENES_CLASSES)
+    start_epoch = 0
+    resume_best = -1.0
+    if args.resume is not None:
+        if not args.resume.is_file():
+            raise FileNotFoundError(f"--resume not found: {args.resume}")
+        try:
+            rck = torch.load(args.resume, map_location=args.device, weights_only=False)
+        except TypeError:
+            rck = torch.load(args.resume, map_location=args.device)
+        model = deeplabv3_resnet50(weights=None)
+        replace_deeplab_head(model, NUM_UAVSCENES_CLASSES)
+        model.load_state_dict(rck["state_dict"], strict=True)
+        start_epoch = int(rck.get("epoch", 0))
+        resume_best = float(rck.get("val_miou", -1.0))
+        print(f"resume: epoch={start_epoch} val_mIoU={resume_best:.4f} from {args.resume}")
+    else:
+        model = deeplabv3_resnet50(weights=wts)
+        replace_deeplab_head(model, NUM_UAVSCENES_CLASSES)
     model = model.to(args.device)
-    opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-4)
+    head_params = list(model.classifier.parameters()) + list(model.aux_classifier.parameters())
+    opt = torch.optim.AdamW(
+        [
+            {"params": model.backbone.parameters(), "lr": args.lr * args.backbone_lr_ratio},
+            {"params": head_params, "lr": args.lr},
+        ],
+        weight_decay=1e-4,
+    )
 
     if args.no_class_weights:
         ce_w: torch.Tensor | None = None
@@ -320,13 +379,16 @@ def main() -> int:
     scaler = GradScaler(enabled=use_amp)
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
-    best_miou = -1.0
+    last_path = args.out.parent / "last.pt"
+    best_miou = max(resume_best, -1.0)
     stagnant = 0
 
-    for epoch in range(1, args.epochs + 1):
-        lr_now = lr_at_epoch(epoch, args.lr, args.warmup_epochs, args.epochs, 0.01)
-        for g in opt.param_groups:
-            g["lr"] = lr_now
+    for epoch in range(start_epoch + 1, args.epochs + 1):
+        lr_head = lr_at_epoch(epoch, args.lr, args.warmup_epochs, args.epochs, 0.01)
+        lr_back = lr_head * args.backbone_lr_ratio
+        opt.param_groups[0]["lr"] = lr_back
+        opt.param_groups[1]["lr"] = lr_head
+        lr_now = lr_head
 
         model.train()
         loss_tr = 0.0
@@ -351,6 +413,10 @@ def main() -> int:
                     args.focal_gamma,
                 )
                 loss = loss_main + args.aux_weight * loss_aux
+                if args.dice_weight > 0:
+                    loss = loss + args.dice_weight * soft_dice_loss_logits(
+                        out["out"], y, NUM_UAVSCENES_CLASSES, IGNORE_LABEL
+                    )
             scaler.scale(loss).backward()
             if args.grad_clip > 0:
                 scaler.unscale_(opt)
@@ -370,7 +436,21 @@ def main() -> int:
                 for b in range(pred.size(0)):
                     cm += confusion_accum(pred[b], y[b], NUM_UAVSCENES_CLASSES, IGNORE_LABEL)
         v_miou = miou_from_cm(cm)
-        print(f"epoch {epoch:03d}  lr={lr_now:.2e}  train_loss={loss_tr:.4f}  val_mIoU={v_miou:.4f}")
+        print(
+            f"epoch {epoch:03d}  lr_head={lr_now:.2e}  lr_back={lr_back:.2e}  "
+            f"train_loss={loss_tr:.4f}  val_mIoU={v_miou:.4f}"
+        )
+
+        torch.save(
+            {
+                "state_dict": model.state_dict(),
+                "num_classes": NUM_UAVSCENES_CLASSES,
+                "ignore_label": IGNORE_LABEL,
+                "epoch": epoch,
+                "val_miou": v_miou,
+            },
+            last_path,
+        )
 
         if v_miou > best_miou + 1e-5:
             best_miou = v_miou

@@ -93,7 +93,7 @@ python3 scripts/train_deeplab_uavscenes.py \
   --lr 1e-4
 ```
 
-训练侧默认：**类别均衡 CE**、**轻量 Focal 项**（`--focal-gamma`，可用 `0` 关闭）、**随机缩放+裁剪**、**ColorJitter**、**翻转**、**LR 线性 warmup + cosine**、**梯度裁剪**、**混合精度（CUDA）**、**验证集 mIoU 早停**（`--patience`，`0` 关闭）。若仍偏低：增加对齐样本、`--epochs 80`、`--focal-gamma 0.5`，或 `--tta-ms` 推理。
+训练侧默认：**类别均衡 CE**、**轻量 Focal**、**骨干/头部分组 LR**（`--backbone-lr-ratio`，默认 0.1）、**随机缩放+裁剪**、**ColorJitter**、**翻转**、**warmup + cosine**、**梯度裁剪**、**AMP**、**早停**。可选 **`--dice-weight 0.2~0.4`**（Dice 辅助损失）、**`--resume checkpoints/last.pt`** 断点续训；每个 epoch 会写 **`checkpoints/last.pt`**。评估可加 **`--per-class`** 导出每类 IoU；推理可加 **`--fp16`**（CUDA）。
 
 4. **用微调权重推理**（`--tta` / `--tta-ms` 可叠加）：
 

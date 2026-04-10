@@ -46,6 +46,22 @@ def confusion_matrix(pred: np.ndarray, gt: np.ndarray, num_classes: int, ignore_
     return bc.reshape(num_classes, num_classes).astype(np.int64)
 
 
+def per_class_iou_from_cm(cm: np.ndarray) -> list[float | None]:
+    """Per-class IoU; None if class never appears in GT+pred confusion (union 0)."""
+    num_classes = cm.shape[0]
+    out: list[float | None] = []
+    for c in range(num_classes):
+        tp = float(cm[c, c])
+        fp = float(cm[:, c].sum() - tp)
+        fn = float(cm[c, :].sum() - tp)
+        union = tp + fp + fn
+        if union <= 0:
+            out.append(None)
+        else:
+            out.append(tp / union)
+    return out
+
+
 def metrics_from_cm(cm: np.ndarray) -> tuple[float, float, float]:
     """Return (miou, macro_dice, fwiou) in 0..1 range."""
     num_classes = cm.shape[0]
@@ -99,6 +115,11 @@ def parse_args() -> argparse.Namespace:
         help="Scale metrics to 0–100 (many leaderboards use 72.73 instead of 0.7273).",
     )
     p.add_argument("--json-out", type=Path, default=None, help="Write metrics JSON to this path.")
+    p.add_argument(
+        "--per-class",
+        action="store_true",
+        help="Include iou_per_class (list aligned to class id 0..N-1) in JSON / stdout.",
+    )
     return p.parse_args()
 
 
@@ -134,7 +155,7 @@ def main() -> int:
 
     miou, dice, fwiou = metrics_from_cm(cm)
     scale = 100.0 if args.as_percent else 1.0
-    out = {
+    out: dict = {
         "miou": round(miou * scale, 4),
         "dice_score": round(dice * scale, 4),
         "fwiou": round(fwiou * scale, 4),
@@ -142,6 +163,9 @@ def main() -> int:
         "num_classes": args.num_classes,
         "ignore_label": args.ignore_label,
     }
+    if args.per_class:
+        raw = per_class_iou_from_cm(cm)
+        out["iou_per_class"] = [None if v is None else round(v * scale, 4) for v in raw]
     text = json.dumps(out, indent=2)
     print(text)
     if args.json_out:

@@ -11,6 +11,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as Fn
 from PIL import Image
+from torch.cuda.amp import autocast
 from torchvision.models.segmentation import DeepLabV3_ResNet50_Weights, deeplabv3_resnet50
 
 _SCRIPT_DIR = Path(__file__).resolve().parent
@@ -119,6 +120,11 @@ def parse_args() -> argparse.Namespace:
         default=50,
         help="Print progress every N images (0 = silent).",
     )
+    parser.add_argument(
+        "--fp16",
+        action="store_true",
+        help="CUDA autocast float16 forward (faster, tiny metric change).",
+    )
     return parser.parse_args()
 
 
@@ -129,6 +135,7 @@ def _logits_to_full_res(
     device: torch.device,
     scales: list[float],
     with_hflip: bool,
+    use_amp: bool,
 ) -> torch.Tensor:
     w, h = pil_img.size
     acc = None
@@ -139,7 +146,8 @@ def _logits_to_full_res(
 
         def one_forward(pil_i: Image.Image) -> torch.Tensor:
             x = tfm(pil_i).unsqueeze(0).to(device)
-            lo = model(x)["out"]
+            with autocast(enabled=use_amp):
+                lo = model(x)["out"]
             return Fn.interpolate(lo, size=(h, w), mode="bilinear", align_corners=False)
 
         lo = one_forward(im)
@@ -199,23 +207,27 @@ def main() -> int:
     processed = 0
     nearest = getattr(Image, "Resampling", Image).NEAREST
     ms_scales = [0.875, 1.0, 1.125]
+    use_amp = bool(args.fp16 and args.device == "cuda")
 
     for img_path in images:
         img = Image.open(img_path).convert("RGB")
         w, h = img.size
         with torch.no_grad():
             if args.tta_ms:
-                out = _logits_to_full_res(model, img, tfm, args.device, ms_scales, with_hflip=args.tta)
+                out = _logits_to_full_res(
+                    model, img, tfm, args.device, ms_scales, with_hflip=args.tta, use_amp=use_amp
+                )
                 pred_full = out[0].argmax(0).cpu().numpy().astype(np.uint8)
             else:
                 x = tfm(img).unsqueeze(0).to(args.device)
-                if args.tta:
-                    lo = model(x)["out"]
-                    xf = torch.flip(x, dims=[3])
-                    lf = torch.flip(model(xf)["out"], dims=[3])
-                    out = (lo + lf) * 0.5
-                else:
-                    out = model(x)["out"]
+                with autocast(enabled=use_amp):
+                    if args.tta:
+                        lo = model(x)["out"]
+                        xf = torch.flip(x, dims=[3])
+                        lf = torch.flip(model(xf)["out"], dims=[3])
+                        out = (lo + lf) * 0.5
+                    else:
+                        out = model(x)["out"]
                 pred = out[0].argmax(0).cpu().numpy().astype(np.uint8)
                 pred_full = np.array(
                     Image.fromarray(pred, mode="L").resize((w, h), nearest),
@@ -244,6 +256,7 @@ def main() -> int:
         "num_images_processed": processed,
         "tta": bool(args.tta),
         "tta_ms": bool(args.tta_ms),
+        "fp16_autocast": use_amp,
     }
     with (args.output_dir / "summary.json").open("w", encoding="utf-8") as f:
         json.dump(summary, f, indent=2)
