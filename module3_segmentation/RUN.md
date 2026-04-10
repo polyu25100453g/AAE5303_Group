@@ -2,6 +2,15 @@
 
 ## 1) Setup
 
+**一键创建环境**（克隆仓库后 `.venv` 不在 git 里，必须先做）：
+
+```bash
+cd ~/AAE5303_Group/module3_segmentation
+bash scripts/bootstrap_venv.sh
+```
+
+或手动：
+
 ```bash
 cd ~/AAE5303_Group/module3_segmentation
 python3 -m venv .venv
@@ -10,6 +19,8 @@ pip install -r requirements.txt
 ```
 
 之后所有 `python3 scripts/...` 都在**已 activate 的同一终端**里运行。
+
+**常见错误**：不要把参数粘在一起，例如错误写法 `--tta-ms-checkpoint`；应写成 **`--tta-ms`** 和 **`--checkpoint checkpoints/xxx.pt`** 两个参数。
 
 ## 2) Default run (use module1_vo images)
 
