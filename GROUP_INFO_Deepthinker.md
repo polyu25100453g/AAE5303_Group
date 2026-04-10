@@ -27,7 +27,8 @@
 - **(individual) Assignment 2:** [https://github.com/xinyan-web/Shenxinyan-assignment2_orbslam3_demo-]
 
 ## Group Projects
-- **(group) Final project:** [GitHub repo link] — layout: `module1_vo/` (VO), `module3_segmentation/` (semantic segmentation).
-- **VO:** `module1_vo/` in this repository.
-- **OpenSplat / 3D reconstruction:** [GitHub repo link or `module2_reconstruction/` if added].
-- **U-net / semantic segmentation:** `module3_segmentation/` — see `module3_segmentation/RUN.md` (incl. UAVScenes 26-class workflow).
+- **(group) Final project:** https://github.com/polyu25100453g/AAE5303_Group
+- **VO:** `module1_vo/`
+- **3D reconstruction (OpenSplat):** `module2_reconstruction/`
+- **Semantic segmentation — U-Net (course demo):** `module3_U-net/`
+- **Semantic segmentation — DeepLab + UAVScenes 26-class pipeline:** `module3_segmentation/` — see `module3_segmentation/RUN.md`
