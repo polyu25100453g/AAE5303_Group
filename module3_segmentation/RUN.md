@@ -1,0 +1,101 @@
+# Module 3 Run Guide
+
+## 1) Setup
+
+```bash
+cd /home/njz/group\ project/module3_segmentation
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+## 2) Default run (use module1_vo images)
+
+```bash
+bash scripts/run_module3.sh
+```
+
+## 3) Custom input/output
+
+```bash
+python3 scripts/infer_segmentation.py \
+  --input-dir ../module1_vo/extracted_data \
+  --output-dir ./output \
+  --max-images 200
+```
+
+## 4) Check results
+
+```bash
+ls output/masks | head
+ls output/overlays | head
+cat output/summary.json
+```
+
+## 5) Leaderboard metrics (mIoU / Dice / fwIoU)
+
+These numbers **require ground-truth label masks** (PNG, one byte per pixel = class id, same naming as `output/masks/*.png`). Put them in e.g. `gt_masks/` then:
+
+```bash
+python3 scripts/evaluate_segmentation.py \
+  --pred-dir ./output/masks \
+  --gt-dir /path/to/gt_masks \
+  --num-classes 21 \
+  --as-percent \
+  --json-out ./output/segmentation_metrics.json
+```
+
+Copy the three values into `leaderboard/submission_segmentation_template.json` under `metrics`, set `group_name` and `project_private_repo_url`, then paste into the site’s **unet** JSON field.
+
+---
+
+## 6) UAVScenes：为什么 COCO 预训练直接算 mIoU 会错？怎么做才对？
+
+**原因**：`deeplabv3_resnet50` 默认是 **21 类 COCO**；UAVScenes 语义标签是 **26 类（id 0–25）**，类别语义与编号都不一致，不能直接拿 GT 和预测算 IoU。
+
+**推荐流程**：
+
+1. **把官方 RGB 彩色标注转为 id 图**（与相机图同名、单通道 0–25，未知像素为 255）：
+
+```bash
+python3 scripts/convert_rgb_gt_to_id.py \
+  --input-dir /path/to/UAVScenes/.../semantic_rgb \
+  --output-dir ./gt_masks_id
+```
+
+2. **微调 DeepLab 头为 26 类**（需成对数据：RGB 图目录 + 上一步的 id mask，文件名对齐）：
+
+```bash
+python3 scripts/train_deeplab_uavscenes.py \
+  --images-dir /path/to/camera_images \
+  --masks-id-dir ./gt_masks_id \
+  --out checkpoints/uavscenes_deeplab.pt \
+  --epochs 30 \
+  --batch-size 4
+```
+
+3. **用微调权重推理**：
+
+```bash
+python3 scripts/infer_segmentation.py \
+  --input-dir /path/to/camera_images \
+  --output-dir ./output_uavscenes_finetuned \
+  --checkpoint checkpoints/uavscenes_deeplab.pt \
+  --max-images 0
+```
+
+（`--max-images 0`：处理目录内全部图像。）
+
+4. **评估时类别数用 26**：
+
+```bash
+python3 scripts/evaluate_segmentation.py \
+  --pred-dir ./output_uavscenes_finetuned/masks \
+  --gt-dir ./gt_masks_id \
+  --num-classes 26 \
+  --ignore-label 255 \
+  --as-percent \
+  --json-out ./output/segmentation_metrics.json
+```
+
+课程若要求 **PyTorch-UNet**，可在同一套 **id 标注** 上换用 [milesial/Pytorch-UNet](https://github.com/milesial/Pytorch-UNet) 训练，`--num-classes` 仍设为 **26**；评估脚本不变。

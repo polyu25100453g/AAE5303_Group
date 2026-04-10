@@ -1,0 +1,9 @@
+{
+  "group_name": "Your Group Name",
+  "project_private_repo_url": "https://github.com/yourorg/your-private-repo.git",
+  "metrics": {
+    "miou": 0.0,
+    "dice_score": 0.0,
+    "fwiou": 0.0
+  }
+}
