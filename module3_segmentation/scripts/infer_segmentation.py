@@ -102,6 +102,11 @@ def parse_args() -> argparse.Namespace:
         default=None,
         help="Override class count; if --checkpoint is set, defaults to value stored in checkpoint.",
     )
+    parser.add_argument(
+        "--tta",
+        action="store_true",
+        help="Test-time augmentation: average logits with horizontal flip (+~0.5–2 mIoU typical).",
+    )
     return parser.parse_args()
 
 
@@ -155,8 +160,14 @@ def main() -> int:
         w, h = img.size
         x = tfm(img).unsqueeze(0).to(args.device)
         with torch.no_grad():
-            out = model(x)["out"][0]
-            pred = out.argmax(0).cpu().numpy().astype(np.uint8)
+            if args.tta:
+                lo = model(x)["out"]
+                xf = torch.flip(x, dims=[3])
+                lf = torch.flip(model(xf)["out"], dims=[3])
+                out = (lo + lf) * 0.5
+            else:
+                out = model(x)["out"]
+            pred = out[0].argmax(0).cpu().numpy().astype(np.uint8)
 
         # Preprocess resizes the tensor; logits are low-res vs original PIL image.
         pred_full = np.array(
@@ -182,6 +193,7 @@ def main() -> int:
         "input_dir": str(args.input_dir),
         "output_dir": str(args.output_dir),
         "num_images_processed": processed,
+        "tta": bool(args.tta),
     }
     with (args.output_dir / "summary.json").open("w", encoding="utf-8") as f:
         json.dump(summary, f, indent=2)

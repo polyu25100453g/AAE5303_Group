@@ -70,18 +70,22 @@ python3 scripts/train_deeplab_uavscenes.py \
   --images-dir /path/to/camera_images \
   --masks-id-dir ./gt_masks_id \
   --out checkpoints/uavscenes_deeplab.pt \
-  --epochs 30 \
-  --batch-size 4
+  --epochs 50 \
+  --batch-size 4 \
+  --lr 1e-4
 ```
 
-3. **用微调权重推理**：
+训练脚本默认已开启：**类别均衡 CE**（缓解草地/道路等极端频率）、**ColorJitter**、**水平翻转**、**Cosine LR**、**CUDA 混合精度**。若仍偏低：多加对齐好的图像–标注对、或把 `--epochs` 提到 80–100。
+
+3. **用微调权重推理**（可选 `--tta` 略提 mIoU）：
 
 ```bash
 python3 scripts/infer_segmentation.py \
   --input-dir /path/to/camera_images \
   --output-dir ./output_uavscenes_finetuned \
   --checkpoint checkpoints/uavscenes_deeplab.pt \
-  --max-images 0
+  --max-images 0 \
+  --tta
 ```
 
 （`--max-images 0`：处理目录内全部图像。）

@@ -25,8 +25,10 @@ import numpy as np
 import torch
 import torch.nn as nn
 from PIL import Image
+from torch.cuda.amp import GradScaler, autocast
 from torch.utils.data import DataLoader, Dataset
 from torchvision.models.segmentation import DeepLabV3_ResNet50_Weights, deeplabv3_resnet50
+from torchvision.transforms import ColorJitter
 from torchvision.transforms import functional as TF
 
 _SCRIPT_DIR = Path(__file__).resolve().parent
@@ -58,19 +60,46 @@ def collect_stems(images_dir: Path, masks_dir: Path) -> list[tuple[Path, Path]]:
     return pairs
 
 
+def histogram_class_pixels(
+    pairs: list[tuple[Path, Path]],
+    num_classes: int,
+    ignore: int,
+    sample_masks: int,
+) -> np.ndarray:
+    rng = random.Random(42)
+    use = pairs if len(pairs) <= sample_masks else rng.sample(pairs, sample_masks)
+    h = np.zeros(num_classes, dtype=np.float64)
+    for _, mp in use:
+        m = np.asarray(Image.open(mp).convert("L"), dtype=np.int64).ravel()
+        m = m[(m != ignore) & (m >= 0) & (m < num_classes)]
+        if m.size:
+            h += np.bincount(m, minlength=num_classes)
+    return h
+
+
+def class_balanced_weights(counts: np.ndarray, beta: float = 0.99) -> torch.Tensor:
+    """Effective number of samples weighting (Class-Balanced Loss style)."""
+    counts = np.maximum(counts, 1.0)
+    eff = (1.0 - np.power(beta, counts)) / (1.0 - beta)
+    w = 1.0 / (eff + 1e-6)
+    w = w / w.mean()
+    return torch.tensor(w, dtype=torch.float32)
+
+
 class SegPairDataset(Dataset):
     def __init__(
         self,
         pairs: list[tuple[Path, Path]],
         size: tuple[int, int],
         weights: DeepLabV3_ResNet50_Weights,
-        augment_hflip: bool,
+        train: bool,
     ) -> None:
         self.pairs = pairs
         self.h, self.w = size
         self.mean = torch.tensor(weights.meta["mean"]).view(3, 1, 1)
         self.std = torch.tensor(weights.meta["std"]).view(3, 1, 1)
-        self.augment_hflip = augment_hflip
+        self.train = train
+        self.color_jitter = ColorJitter(brightness=0.25, contrast=0.25, saturation=0.2, hue=0.04)
 
     def __len__(self) -> int:
         return len(self.pairs)
@@ -79,9 +108,11 @@ class SegPairDataset(Dataset):
         ip, mp = self.pairs[idx]
         img = Image.open(ip).convert("RGB")
         mask = Image.open(mp).convert("L")
+        if self.train:
+            img = self.color_jitter(img)
         img = TF.resize(img, (self.h, self.w), antialias=True)
         mask = TF.resize(mask, (self.h, self.w), interpolation=Image.NEAREST)
-        if self.augment_hflip and random.random() < 0.5:
+        if self.train and random.random() < 0.5:
             img = TF.hflip(img)
             mask = TF.hflip(mask)
         t = TF.to_tensor(img)
@@ -127,6 +158,19 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--val-fraction", type=float, default=0.1)
     p.add_argument("--num-workers", type=int, default=2)
     p.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu")
+    p.add_argument("--aux-weight", type=float, default=0.4)
+    p.add_argument(
+        "--no-class-weights",
+        action="store_true",
+        help="Disable class-balanced CE (default: on, helps rare UAVScenes classes).",
+    )
+    p.add_argument(
+        "--weight-sample-masks",
+        type=int,
+        default=384,
+        help="How many train masks to scan for class frequency (speed vs accuracy).",
+    )
+    p.add_argument("--no-amp", action="store_true", help="Disable mixed precision on CUDA.")
     return p.parse_args()
 
 
@@ -146,8 +190,8 @@ def main() -> int:
     train_pairs = pairs[n_val:]
     print(f"train={len(train_pairs)} val={len(val_pairs)}")
 
-    train_ds = SegPairDataset(train_pairs, (args.size, args.size), wts, augment_hflip=True)
-    val_ds = SegPairDataset(val_pairs, (args.size, args.size), wts, augment_hflip=False)
+    train_ds = SegPairDataset(train_pairs, (args.size, args.size), wts, train=True)
+    val_ds = SegPairDataset(val_pairs, (args.size, args.size), wts, train=False)
     train_ld = DataLoader(
         train_ds,
         batch_size=args.batch_size,
@@ -165,8 +209,24 @@ def main() -> int:
     model = deeplabv3_resnet50(weights=wts)
     replace_deeplab_head(model, NUM_UAVSCENES_CLASSES)
     model = model.to(args.device)
-    opt = torch.optim.AdamW(model.parameters(), lr=args.lr)
-    ce = nn.CrossEntropyLoss(ignore_index=IGNORE_LABEL)
+    opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-4)
+    sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=args.epochs, eta_min=args.lr * 0.01)
+
+    if args.no_class_weights:
+        ce_w: torch.Tensor | None = None
+    else:
+        hist = histogram_class_pixels(
+            train_pairs,
+            NUM_UAVSCENES_CLASSES,
+            IGNORE_LABEL,
+            min(args.weight_sample_masks, len(train_pairs)),
+        )
+        ce_w = class_balanced_weights(hist).to(args.device)
+        print("class pixel histogram (sampled):", hist.astype(int).tolist())
+
+    ce = nn.CrossEntropyLoss(ignore_index=IGNORE_LABEL, weight=ce_w)
+    use_amp = args.device == "cuda" and not args.no_amp
+    scaler = GradScaler(enabled=use_amp)
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
     best_miou = -1.0
@@ -178,13 +238,16 @@ def main() -> int:
         for x, y in train_ld:
             x, y = x.to(args.device), y.to(args.device)
             opt.zero_grad(set_to_none=True)
-            out = model(x)
-            loss = ce(out["out"], y) + 0.4 * ce(out["aux"], y)
-            loss.backward()
-            opt.step()
+            with autocast(enabled=use_amp):
+                out = model(x)
+                loss = ce(out["out"], y) + args.aux_weight * ce(out["aux"], y)
+            scaler.scale(loss).backward()
+            scaler.step(opt)
+            scaler.update()
             loss_tr += float(loss.item())
             n += 1
         loss_tr /= max(n, 1)
+        sched.step()
 
         model.eval()
         cm = np.zeros((NUM_UAVSCENES_CLASSES, NUM_UAVSCENES_CLASSES), dtype=np.int64)
@@ -195,7 +258,8 @@ def main() -> int:
                 for b in range(pred.size(0)):
                     cm += confusion_accum(pred[b], y[b], NUM_UAVSCENES_CLASSES, IGNORE_LABEL)
         v_miou = miou_from_cm(cm)
-        print(f"epoch {epoch:03d}  train_loss={loss_tr:.4f}  val_mIoU={v_miou:.4f}")
+        lr_now = float(opt.param_groups[0]["lr"])
+        print(f"epoch {epoch:03d}  lr={lr_now:.2e}  train_loss={loss_tr:.4f}  val_mIoU={v_miou:.4f}")
 
         if v_miou > best_miou:
             best_miou = v_miou
