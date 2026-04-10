@@ -29,10 +29,11 @@ We don't know coding at all, but we are expert in debugging!!!
 - **(individual) Assignment 2:** https://github.com/CHANGJianshuo/AAE5303_assignment2
 
 ## Group Projects
-- **(group) Final project:** https://github.com/yourgroup/final-project
-- **VO:** https://github.com/yourgroup/vo
-- **Opensplating:** https://github.com/yourgroup/opensplating
-- **U-net:** https://github.com/yourgroup/u-net
+- **(group) Final project:** https://github.com/CHANGJianshuo/AAE5303_final_project-Debuggers-
+- **(group) Slides:** https://docs.google.com/presentation/d/12q0DR_2JYD_6mlSpJrw-zUx36IqqkDc5zTIKe7KoQwA/edit?usp=sharing
+- **VO:** https://github.com/AfonsoZhang/ORB-SLAM3-DJI-AMtown
+- **Opensplating:** https://github.com/CHANGJianshuo/AAE5303_3dgs
+- **U-net:** https://github.com/yyslyd/U-net
 
 Up to 3 members~
 ---
