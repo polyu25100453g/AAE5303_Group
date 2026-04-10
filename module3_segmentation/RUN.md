@@ -3,13 +3,20 @@
 ## 1) Setup
 
 ```bash
-cd /home/njz/group\ project/module3_segmentation
+cd ~/AAE5303_Group/module3_segmentation
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
 ## 2) Default run (use module1_vo images)
+
+自动优先使用 `../module1_vo/extracted_data/rgb`（抽帧后的相机图）。可选环境变量：
+
+- `CHECKPOINT=/path/to/uavscenes_deeplab.pt` — 使用微调权重（26 类）
+- `TTA=1` — 水平翻转 TTA
+- `TTA_MS=1` — 多尺度 TTA（更慢，略提分）
+- `MAX_IMAGES=500` — 限制张数
 
 ```bash
 bash scripts/run_module3.sh
@@ -63,21 +70,30 @@ python3 scripts/convert_rgb_gt_to_id.py \
   --output-dir ./gt_masks_id
 ```
 
-2. **微调 DeepLab 头为 26 类**（需成对数据：RGB 图目录 + 上一步的 id mask，文件名对齐）：
+2. **（建议）先检查图像与 mask 是否对齐**：
+
+```bash
+python3 scripts/check_uavscenes_pairs.py \
+  --images-dir /path/to/camera_images \
+  --masks-id-dir ./gt_masks_id \
+  --list-missing 10
+```
+
+3. **微调 DeepLab 头为 26 类**（需成对数据：RGB 图目录 + 上一步的 id mask，文件名对齐）：
 
 ```bash
 python3 scripts/train_deeplab_uavscenes.py \
   --images-dir /path/to/camera_images \
   --masks-id-dir ./gt_masks_id \
   --out checkpoints/uavscenes_deeplab.pt \
-  --epochs 50 \
+  --epochs 60 \
   --batch-size 4 \
   --lr 1e-4
 ```
 
-训练脚本默认已开启：**类别均衡 CE**（缓解草地/道路等极端频率）、**ColorJitter**、**水平翻转**、**Cosine LR**、**CUDA 混合精度**。若仍偏低：多加对齐好的图像–标注对、或把 `--epochs` 提到 80–100。
+训练侧默认：**类别均衡 CE**、**轻量 Focal 项**（`--focal-gamma`，可用 `0` 关闭）、**随机缩放+裁剪**、**ColorJitter**、**翻转**、**LR 线性 warmup + cosine**、**梯度裁剪**、**混合精度（CUDA）**、**验证集 mIoU 早停**（`--patience`，`0` 关闭）。若仍偏低：增加对齐样本、`--epochs 80`、`--focal-gamma 0.5`，或 `--tta-ms` 推理。
 
-3. **用微调权重推理**（可选 `--tta` 略提 mIoU）：
+4. **用微调权重推理**（`--tta` / `--tta-ms` 可叠加）：
 
 ```bash
 python3 scripts/infer_segmentation.py \
@@ -85,12 +101,12 @@ python3 scripts/infer_segmentation.py \
   --output-dir ./output_uavscenes_finetuned \
   --checkpoint checkpoints/uavscenes_deeplab.pt \
   --max-images 0 \
-  --tta
+  --tta --tta-ms
 ```
 
 （`--max-images 0`：处理目录内全部图像。）
 
-4. **评估时类别数用 26**：
+5. **评估时类别数用 26**：
 
 ```bash
 python3 scripts/evaluate_segmentation.py \

@@ -17,6 +17,7 @@ Example:
 from __future__ import annotations
 
 import argparse
+import math
 import random
 import sys
 from pathlib import Path
@@ -24,6 +25,7 @@ from pathlib import Path
 import numpy as np
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from PIL import Image
 from torch.cuda.amp import GradScaler, autocast
 from torch.utils.data import DataLoader, Dataset
@@ -86,6 +88,32 @@ def class_balanced_weights(counts: np.ndarray, beta: float = 0.99) -> torch.Tens
     return torch.tensor(w, dtype=torch.float32)
 
 
+def ce_focal_loss(
+    logits: torch.Tensor,
+    target: torch.Tensor,
+    weight: torch.Tensor | None,
+    ignore: int,
+    focal_gamma: float,
+) -> torch.Tensor:
+    ce_n = F.cross_entropy(logits, target, weight=weight, ignore_index=ignore, reduction="none")
+    if focal_gamma <= 0:
+        mask = target != ignore
+        return ce_n[mask].mean()
+    mask = target != ignore
+    pt = torch.exp(-torch.clamp(ce_n, max=50.0))
+    focal = (1.0 - pt).pow(2.0) * ce_n
+    return ce_n[mask].mean() + focal_gamma * focal[mask].mean()
+
+
+def lr_at_epoch(epoch: int, base_lr: float, warmup: int, total_epochs: int, eta_min_ratio: float) -> float:
+    eta_min = base_lr * eta_min_ratio
+    if epoch <= warmup:
+        return base_lr * float(epoch) / float(max(warmup, 1))
+    t = epoch - warmup - 1
+    T = max(total_epochs - warmup, 1)
+    return eta_min + (base_lr - eta_min) * 0.5 * (1.0 + math.cos(math.pi * float(t) / float(max(T - 1, 1))))
+
+
 class SegPairDataset(Dataset):
     def __init__(
         self,
@@ -93,16 +121,40 @@ class SegPairDataset(Dataset):
         size: tuple[int, int],
         weights: DeepLabV3_ResNet50_Weights,
         train: bool,
+        scale_aug: bool,
+        scale_min: float,
+        scale_max: float,
     ) -> None:
         self.pairs = pairs
         self.h, self.w = size
         self.mean = torch.tensor(weights.meta["mean"]).view(3, 1, 1)
         self.std = torch.tensor(weights.meta["std"]).view(3, 1, 1)
         self.train = train
+        self.scale_aug = scale_aug and train
+        self.scale_min = scale_min
+        self.scale_max = scale_max
         self.color_jitter = ColorJitter(brightness=0.25, contrast=0.25, saturation=0.2, hue=0.04)
 
     def __len__(self) -> int:
         return len(self.pairs)
+
+    def _random_scale_crop(self, img: Image.Image, mask: Image.Image) -> tuple[Image.Image, Image.Image]:
+        w0, h0 = img.size
+        ch, cw = self.h, self.w
+        base = max(ch, cw)
+        lo = max(int(base * self.scale_min), base)
+        hi = max(int(base * self.scale_max), lo + 8)
+        target_min = random.randint(lo, hi)
+        scale = target_min / float(min(h0, w0))
+        nw = max(int(round(w0 * scale)), cw)
+        nh = max(int(round(h0 * scale)), ch)
+        img = img.resize((nw, nh), Image.Resampling.BILINEAR if hasattr(Image, "Resampling") else Image.BILINEAR)
+        mask = mask.resize((nw, nh), Image.NEAREST)
+        top = random.randint(0, max(0, nh - ch))
+        left = random.randint(0, max(0, nw - cw))
+        img = img.crop((left, top, left + cw, top + ch))
+        mask = mask.crop((left, top, left + cw, top + ch))
+        return img, mask
 
     def __getitem__(self, idx: int) -> tuple[torch.Tensor, torch.Tensor]:
         ip, mp = self.pairs[idx]
@@ -110,8 +162,11 @@ class SegPairDataset(Dataset):
         mask = Image.open(mp).convert("L")
         if self.train:
             img = self.color_jitter(img)
-        img = TF.resize(img, (self.h, self.w), antialias=True)
-        mask = TF.resize(mask, (self.h, self.w), interpolation=Image.NEAREST)
+        if self.scale_aug:
+            img, mask = self._random_scale_crop(img, mask)
+        else:
+            img = TF.resize(img, (self.h, self.w), antialias=True)
+            mask = TF.resize(mask, (self.h, self.w), interpolation=Image.NEAREST)
         if self.train and random.random() < 0.5:
             img = TF.hflip(img)
             mask = TF.hflip(mask)
@@ -171,6 +226,27 @@ def parse_args() -> argparse.Namespace:
         help="How many train masks to scan for class frequency (speed vs accuracy).",
     )
     p.add_argument("--no-amp", action="store_true", help="Disable mixed precision on CUDA.")
+    p.add_argument(
+        "--no-scale-aug",
+        action="store_true",
+        help="Disable random scale+crop (only fixed resize like val).",
+    )
+    p.add_argument("--scale-min", type=float, default=0.65, help="Min scale vs crop size for train aug.")
+    p.add_argument("--scale-max", type=float, default=1.35, help="Max scale vs crop size for train aug.")
+    p.add_argument("--warmup-epochs", type=int, default=5, help="Linear LR warmup before cosine decay.")
+    p.add_argument("--grad-clip", type=float, default=1.0, help="0 = disable grad norm clip.")
+    p.add_argument(
+        "--focal-gamma",
+        type=float,
+        default=0.25,
+        help="Extra focal term weight (0 = CE only). Helps hard pixels.",
+    )
+    p.add_argument(
+        "--patience",
+        type=int,
+        default=18,
+        help="Early stop if val mIoU does not improve for this many epochs (0 = off).",
+    )
     return p.parse_args()
 
 
@@ -190,8 +266,25 @@ def main() -> int:
     train_pairs = pairs[n_val:]
     print(f"train={len(train_pairs)} val={len(val_pairs)}")
 
-    train_ds = SegPairDataset(train_pairs, (args.size, args.size), wts, train=True)
-    val_ds = SegPairDataset(val_pairs, (args.size, args.size), wts, train=False)
+    use_scale = not args.no_scale_aug
+    train_ds = SegPairDataset(
+        train_pairs,
+        (args.size, args.size),
+        wts,
+        train=True,
+        scale_aug=use_scale,
+        scale_min=args.scale_min,
+        scale_max=args.scale_max,
+    )
+    val_ds = SegPairDataset(
+        val_pairs,
+        (args.size, args.size),
+        wts,
+        train=False,
+        scale_aug=False,
+        scale_min=args.scale_min,
+        scale_max=args.scale_max,
+    )
     train_ld = DataLoader(
         train_ds,
         batch_size=args.batch_size,
@@ -210,7 +303,6 @@ def main() -> int:
     replace_deeplab_head(model, NUM_UAVSCENES_CLASSES)
     model = model.to(args.device)
     opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-4)
-    sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=args.epochs, eta_min=args.lr * 0.01)
 
     if args.no_class_weights:
         ce_w: torch.Tensor | None = None
@@ -224,14 +316,18 @@ def main() -> int:
         ce_w = class_balanced_weights(hist).to(args.device)
         print("class pixel histogram (sampled):", hist.astype(int).tolist())
 
-    ce = nn.CrossEntropyLoss(ignore_index=IGNORE_LABEL, weight=ce_w)
     use_amp = args.device == "cuda" and not args.no_amp
     scaler = GradScaler(enabled=use_amp)
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
     best_miou = -1.0
+    stagnant = 0
 
     for epoch in range(1, args.epochs + 1):
+        lr_now = lr_at_epoch(epoch, args.lr, args.warmup_epochs, args.epochs, 0.01)
+        for g in opt.param_groups:
+            g["lr"] = lr_now
+
         model.train()
         loss_tr = 0.0
         n = 0
@@ -240,14 +336,30 @@ def main() -> int:
             opt.zero_grad(set_to_none=True)
             with autocast(enabled=use_amp):
                 out = model(x)
-                loss = ce(out["out"], y) + args.aux_weight * ce(out["aux"], y)
+                loss_main = ce_focal_loss(
+                    out["out"],
+                    y,
+                    ce_w,
+                    IGNORE_LABEL,
+                    args.focal_gamma,
+                )
+                loss_aux = ce_focal_loss(
+                    out["aux"],
+                    y,
+                    ce_w,
+                    IGNORE_LABEL,
+                    args.focal_gamma,
+                )
+                loss = loss_main + args.aux_weight * loss_aux
             scaler.scale(loss).backward()
+            if args.grad_clip > 0:
+                scaler.unscale_(opt)
+                torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=args.grad_clip)
             scaler.step(opt)
             scaler.update()
             loss_tr += float(loss.item())
             n += 1
         loss_tr /= max(n, 1)
-        sched.step()
 
         model.eval()
         cm = np.zeros((NUM_UAVSCENES_CLASSES, NUM_UAVSCENES_CLASSES), dtype=np.int64)
@@ -258,11 +370,11 @@ def main() -> int:
                 for b in range(pred.size(0)):
                     cm += confusion_accum(pred[b], y[b], NUM_UAVSCENES_CLASSES, IGNORE_LABEL)
         v_miou = miou_from_cm(cm)
-        lr_now = float(opt.param_groups[0]["lr"])
         print(f"epoch {epoch:03d}  lr={lr_now:.2e}  train_loss={loss_tr:.4f}  val_mIoU={v_miou:.4f}")
 
-        if v_miou > best_miou:
+        if v_miou > best_miou + 1e-5:
             best_miou = v_miou
+            stagnant = 0
             torch.save(
                 {
                     "state_dict": model.state_dict(),
@@ -274,6 +386,11 @@ def main() -> int:
                 args.out,
             )
             print(f"  saved {args.out} (best val_mIoU={best_miou:.4f})")
+        else:
+            stagnant += 1
+            if args.patience > 0 and stagnant >= args.patience:
+                print(f"early stop: no val improvement for {args.patience} epochs")
+                break
 
     print(f"Done. Best val mIoU={best_miou:.4f} → {args.out}")
     return 0

@@ -9,6 +9,7 @@ from pathlib import Path
 import numpy as np
 import torch
 import torch.nn as nn
+import torch.nn.functional as Fn
 from PIL import Image
 from torchvision.models.segmentation import DeepLabV3_ResNet50_Weights, deeplabv3_resnet50
 
@@ -107,7 +108,49 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Test-time augmentation: average logits with horizontal flip (+~0.5–2 mIoU typical).",
     )
+    parser.add_argument(
+        "--tta-ms",
+        action="store_true",
+        help="Multi-scale TTA: average logits at scales 0.875 / 1.0 / 1.125 (original resolution). Slower.",
+    )
+    parser.add_argument(
+        "--progress-every",
+        type=int,
+        default=50,
+        help="Print progress every N images (0 = silent).",
+    )
     return parser.parse_args()
+
+
+def _logits_to_full_res(
+    model: nn.Module,
+    pil_img: Image.Image,
+    tfm,
+    device: torch.device,
+    scales: list[float],
+    with_hflip: bool,
+) -> torch.Tensor:
+    w, h = pil_img.size
+    acc = None
+    for s in scales:
+        w2 = max(32, int(round(w * s)))
+        h2 = max(32, int(round(h * s)))
+        im = pil_img.resize((w2, h2), Image.Resampling.BILINEAR if hasattr(Image, "Resampling") else Image.BILINEAR)
+
+        def one_forward(pil_i: Image.Image) -> torch.Tensor:
+            x = tfm(pil_i).unsqueeze(0).to(device)
+            lo = model(x)["out"]
+            return Fn.interpolate(lo, size=(h, w), mode="bilinear", align_corners=False)
+
+        lo = one_forward(im)
+        acc = lo if acc is None else acc + lo
+        if with_hflip:
+            imf = im.transpose(Image.FLIP_LEFT_RIGHT)
+            lf = one_forward(imf)
+            lf = torch.flip(lf, dims=[3])
+            acc = acc + lf
+    denom = float(len(scales)) * (2.0 if with_hflip else 1.0)
+    return acc / denom
 
 
 def main() -> int:
@@ -155,25 +198,29 @@ def main() -> int:
 
     processed = 0
     nearest = getattr(Image, "Resampling", Image).NEAREST
+    ms_scales = [0.875, 1.0, 1.125]
+
     for img_path in images:
         img = Image.open(img_path).convert("RGB")
         w, h = img.size
-        x = tfm(img).unsqueeze(0).to(args.device)
         with torch.no_grad():
-            if args.tta:
-                lo = model(x)["out"]
-                xf = torch.flip(x, dims=[3])
-                lf = torch.flip(model(xf)["out"], dims=[3])
-                out = (lo + lf) * 0.5
+            if args.tta_ms:
+                out = _logits_to_full_res(model, img, tfm, args.device, ms_scales, with_hflip=args.tta)
+                pred_full = out[0].argmax(0).cpu().numpy().astype(np.uint8)
             else:
-                out = model(x)["out"]
-            pred = out[0].argmax(0).cpu().numpy().astype(np.uint8)
-
-        # Preprocess resizes the tensor; logits are low-res vs original PIL image.
-        pred_full = np.array(
-            Image.fromarray(pred, mode="L").resize((w, h), nearest),
-            dtype=np.uint8,
-        )
+                x = tfm(img).unsqueeze(0).to(args.device)
+                if args.tta:
+                    lo = model(x)["out"]
+                    xf = torch.flip(x, dims=[3])
+                    lf = torch.flip(model(xf)["out"], dims=[3])
+                    out = (lo + lf) * 0.5
+                else:
+                    out = model(x)["out"]
+                pred = out[0].argmax(0).cpu().numpy().astype(np.uint8)
+                pred_full = np.array(
+                    Image.fromarray(pred, mode="L").resize((w, h), nearest),
+                    dtype=np.uint8,
+                )
         color = colorize_mask(pred_full, palette)
         base = np.array(img, dtype=np.uint8)
         overlay = (0.6 * base + 0.4 * color).astype(np.uint8)
@@ -183,6 +230,8 @@ def main() -> int:
         Image.fromarray(color, mode="RGB").save(color_dir / f"{stem}.png")
         Image.fromarray(overlay, mode="RGB").save(overlay_dir / f"{stem}.png")
         processed += 1
+        if args.progress_every > 0 and processed % args.progress_every == 0:
+            print(f"infer: {processed}/{len(images)}", flush=True)
 
     summary = {
         "model": "torchvision.deeplabv3_resnet50",
@@ -194,6 +243,7 @@ def main() -> int:
         "output_dir": str(args.output_dir),
         "num_images_processed": processed,
         "tta": bool(args.tta),
+        "tta_ms": bool(args.tta_ms),
     }
     with (args.output_dir / "summary.json").open("w", encoding="utf-8") as f:
         json.dump(summary, f, indent=2)

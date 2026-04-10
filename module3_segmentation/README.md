@@ -50,4 +50,6 @@ bash scripts/run_module3.sh
 ## Notes
 
 - **COCO 预训练仅作演示**：与 UAVScenes **26 类** GT 直接算 mIoU 没有意义，见 `RUN.md` 第 6 节：先 `convert_rgb_gt_to_id.py`，再 `train_deeplab_uavscenes.py` 微调，推理时加 `--checkpoint`。
+- **训练**：缩放随机裁剪、warmup+cosine LR、类别均衡 + 可选 focal、梯度裁剪、早停；**推理**：`--tta`、`--tta-ms`；**排查**：`scripts/check_uavscenes_pairs.py`。
+- `run_module3.sh` 优先使用 `module1_vo/extracted_data/rgb`；环境变量 `CHECKPOINT` / `TTA` / `TTA_MS` 见 `RUN.md`。
 - 课程推荐的 [PyTorch-UNet](https://github.com/milesial/Pytorch-UNet) 可在同一套 **id 标注** 上替换训练部分；评估仍用 `evaluate_segmentation.py --num-classes 26`。
