@@ -5,9 +5,11 @@
 ```bash
 cd ~/AAE5303_Group/module3_segmentation
 python3 -m venv .venv
-source .venv/bin/activate
+source .venv/bin/activate   # 每次新开终端都要执行，否则会 ModuleNotFoundError: numpy
 pip install -r requirements.txt
 ```
+
+之后所有 `python3 scripts/...` 都在**已 activate 的同一终端**里运行。
 
 ## 2) Default run (use module1_vo images)
 
