@@ -11,7 +11,7 @@ As it going, only me.
 - **Name:** DU Jiayi Rachel
 - **About Me:** Otaku
 - **(individual) Assignment 1:** https://github.com/ReiSei0824/Assignment1_25005153G
-- **(individual) Assignment 2:** [GitHub repo link]
+- **(individual) Assignment 2:** https://github.com/ReiSei0824/AAE5303-Assignment2-25005153G
 - **Photo (Optional):** [You can add a photo link or emoji here if you want!]
 
 ### Member 2
@@ -31,10 +31,11 @@ As it going, only me.
 - **Photo (Optional):** [You can add a photo link or emoji here if you want!]
 
 ## Group Projects
-- **(group) Final project:** [GitHub repo link]
-- **VO:** [GitHub repo link]
-- **Opensplating:** [GitHub repo link]
-- **U-net:** [GitHub repo link]
+- **(group) Final project:** https://github.com/ReiSei0824/AAE5303-GroupProject
+- **VO:** https://github.com/ReiSei0824/AAE5303-GroupProject/tree/VO
+- **Opensplating:** https://github.com/ReiSei0824/AAE5303-GroupProject/tree/OpenSplatting
+- **U-net:** https://github.com/ReiSei0824/AAE5303-GroupProject/tree/U-Net
+- **Slides:** https://github.com/ReiSei0824/AAE5303-GroupProject/tree/Slides
 ```
 
 ## 🎉 Ready to Create?
