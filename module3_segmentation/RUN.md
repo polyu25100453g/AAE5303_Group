@@ -65,7 +65,16 @@ python3 scripts/evaluate_segmentation.py \
   --json-out ./output/segmentation_metrics.json
 ```
 
-Copy the three values into `leaderboard/submission_segmentation_template.json` under `metrics`, set `group_name` and `project_private_repo_url`, then paste into the site’s **unet** JSON field.
+Copy the three values into `leaderboard/submission_segmentation_template.json` under `metrics`, set `group_name` and `project_private_repo_url`, then paste into the site’s **unet** JSON field。
+
+或从 `segmentation_metrics.json` 一键生成上传用 JSON：
+
+```bash
+python3 scripts/build_unet_leaderboard_json.py output/segmentation_metrics.json \
+  -o leaderboard/submission_unet_Deepthinker.json
+```
+
+（示例文件 `leaderboard/submission_unet_Deepthinker.json` 需在对**全部**预测跑完 `evaluate_segmentation.py` 后重新生成再提交。）
 
 ---
 
