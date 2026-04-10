@@ -39,6 +39,19 @@ if str(_SCRIPT_DIR) not in sys.path:
 
 from uavscenes_cmap import IGNORE_LABEL, NUM_UAVSCENES_CLASSES
 
+# torchvision 版本差异：部分环境下 Weights.meta 无 mean/std，与 ImageNet 预训练一致即可。
+_IMAGENET_MEAN = (0.485, 0.456, 0.406)
+_IMAGENET_STD = (0.229, 0.224, 0.225)
+
+
+def mean_std_tensors(wts: DeepLabV3_ResNet50_Weights) -> tuple[torch.Tensor, torch.Tensor]:
+    meta = getattr(wts, "meta", None) or {}
+    mean = meta.get("mean", _IMAGENET_MEAN)
+    std = meta.get("std", _IMAGENET_STD)
+    m = torch.tensor(mean, dtype=torch.float32).view(3, 1, 1)
+    s = torch.tensor(std, dtype=torch.float32).view(3, 1, 1)
+    return m, s
+
 
 def replace_deeplab_head(model: nn.Module, num_classes: int) -> None:
     in_ch = model.classifier[-1].in_channels
@@ -145,8 +158,7 @@ class SegPairDataset(Dataset):
     ) -> None:
         self.pairs = pairs
         self.h, self.w = size
-        self.mean = torch.tensor(weights.meta["mean"]).view(3, 1, 1)
-        self.std = torch.tensor(weights.meta["std"]).view(3, 1, 1)
+        self.mean, self.std = mean_std_tensors(weights)
         self.train = train
         self.scale_aug = scale_aug and train
         self.scale_min = scale_min
