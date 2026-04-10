@@ -10,21 +10,21 @@
 - **Name:** [NIE Jiazheng]
 - **About Me:** [He's a silent guardian... a watchful protector. A DARK KNIGHT. ]
 - **(individual) Assignment 1:** [https://github.com/polyu25100453g/PolyU-AAE5303-assignment-1]
-- **(individual) Assignment 2:** [GitHub repo link]
+- **(individual) Assignment 2:** [https://github.com/polyu25100453g/AAE5303_assignment2_orbslam3_demo-]
 
 ### Member 2
 - **Student ID:** [25098413g]
 - **Name:** [ZHANG Fengyuan]
 - **About Me:** [A taciturn person. ]
 - **(individual) Assignment 1:** [https://github.com/Zhang123-png/PolyU-AAE5303-assignment-1-template]
-- **(individual) Assignment 2:** [GitHub repo link]
+- **(individual) Assignment 2:** [https://github.com/Zhang123-png/AAE5303_assignment2_orbslam3_demo-]
 
 ### Member 3
 - **Student ID:** [25072438g]
 - **Name:** [SHEN Xinyan]
 - **About Me:** [Early to bed and early to rise. ]
 - **(individual) Assignment 1:** [https://github.com/xinyan-web/xinyan-SHEN.git]
-- **(individual) Assignment 2:** [GitHub repo link]
+- **(individual) Assignment 2:** [https://github.com/xinyan-web/Shenxinyan-assignment2_orbslam3_demo-]
 
 ## Group Projects
 - **(group) Final project:** [GitHub repo link]

@@ -27,6 +27,7 @@ Please include GitHub repo links for:
 - **VO**
 - **Opensplating**
 - **U-net**
+- **Slides**
 
 
 That's it! The rest is up to you! 🎉
@@ -91,6 +92,7 @@ Here's what the basic structure might look like, but remember - **you can totall
 - **VO:** [GitHub repo link]
 - **Opensplating:** [GitHub repo link]
 - **U-net:** [GitHub repo link]
+- **Slides:** [GitHub repo link]
 ```
 
 But seriously, **don't feel bound by this structure!** You could:

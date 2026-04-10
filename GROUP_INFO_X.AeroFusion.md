@@ -20,7 +20,7 @@ We chose the name "X‑AeroFusion Group" because we are a student team focusing 
 - **Name:** FENG Xuemeng
 - **Brief Introduction:**  FENG Xuemeng uses code to turn ideals into reality and create opportunities for life.
 - **(individual) Assignment 1:** https://github.com/fengxuemeng7-alt/PolyU-AAE5303-assignment-1-template
-- **(individual) Assignment 2:** https://github.com/fengxuemeng7-alt/assignment-2
+- **(individual) Assignment 2:** [https://github.com/fengxuemeng7-alt/assignment-2](https://github.com/fengxuemeng7-alt/AAE5303_assignment2)
 
 ### Member 3
 - **Student ID:** 25091409G
