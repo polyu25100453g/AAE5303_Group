@@ -26,7 +26,8 @@ Data never rests, and neither do we.
 - **Name:** HOU Guanhao
 - **Brief Introduction:** HOU Guanhao has some foundation in coding and practical experience in system development, particularly from contributing to the construction of a library literature retrieval system. He is full of enthusiasm and confidence for this course.
 - **(individual) Assignment 1:** [https://github.com/HOU_Guanhao/assignment1](https://github.com/SeanHOU123/AAE5303_Assignment_1) 
-- **(individual) Assignment 2:** [https://github.com/HOU_Guanhao/assignment2](https://github.com/SeanHOU123/AAE5303_Assignment_2) 
+- **(individual) Assignment 2:** [https://github.com/HOU_Guanhao/assignment2](https://github.com/SeanHOU123/AAE5303_Assignment_2)
+- **(individual) Reflection Report:** [https://github.com/HOU_Guanhao/Reflection_Report](https://github.com/SeanHOU123/AAE5303_Reflection_Report_HOU_Guanhao) 
 
 ### Member 2
 - **Student ID:** 25108433G
@@ -34,6 +35,7 @@ Data never rests, and neither do we.
 - **Brief Introduction:** GAN Yuxin is a cheerful and outgoing girl who is very passionate about this course and always happy to work with everyone in group projects.
 - **(individual) Assignment 1:** [https://github.com/GAN_Yuxin/assignment1](https://github.com/gyx2003328-dot/PolyU-AAE5303-assignment-1-template/blob/assignment-1/README.md)
 - **(individual) Assignment 2:** [https://github.com/GAN_Yuxin/assignment2](https://github.com/gyx2003328-dot/AAE5303_assignment2)
+- **(individual) Reflection Report:**
 
 ### Member 3
 - **Student ID:** 25116049G
@@ -41,6 +43,7 @@ Data never rests, and neither do we.
 - **Brief Introduction:** Li Ziyan is a passionate learner, enjoying the process of turning ideas into functional code. She actively contributes to team projects and values the exchange of diverse perspectives.
 - **(individual) Assignment 1:** [https://github.com/Li_Ziyan/assignment1](https://github.com/joyziyan678/PolyU-AAE5303-assignment-1-template.git)
 - **(individual) Assignment 2:** [https://github.com/Li_Ziyan/assignment2](https://github.com/joyziyan678/AAE5303_assignment2_orbslam3_demo-)
+- **(individual) Reflection Report:** [https://github.com/Li_Ziyan/Reflection_Report](https://github.com/joyziyan678/AAE5303_Reflection_Report) 
 
 ## Group Projects
 - **(group) Final project slides:** [https://github.com/Final_Project_Slides](https://github.com/SeanHOU123/AAE5303_Group_Project_Slides) 
@@ -48,8 +51,7 @@ Data never rests, and neither do we.
 - **Opensplating:** [https://github.com/Li_Ziyan/AAE5303_Group_Project_Opensplating](https://github.com/joyziyan678/gogogo-OpenSplating) 
 - **U-net:** [https://github.com/GAN_Yuxin/AAE5303_Group_Project_U-net](https://github.com/gyx2003328-dot/semantic-project) 
 
-Up to 3 members~
 ---
 
-*Last Updated: [10/04/2026]*
+*Last Updated: [11/04/2026]*
 
