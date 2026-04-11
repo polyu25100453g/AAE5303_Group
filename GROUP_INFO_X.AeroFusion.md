@@ -31,9 +31,9 @@ We chose the name "X‑AeroFusion Group" because we are a student team focusing 
 
 ## Group Projects
 - **(group) Final project:** https://github.com/X-AeroFusion-Group/final-project
-- **VO:** https://github.com/X-AeroFusion-Group/vo
-- **Opensplating:** https://github.com/X-AeroFusion-Group/opensplating
-- **U-net:** https://github.com/X-AeroFusion-Group/u-net
+- **VO:** https://github.com/X-AeroFusion-Group/AAE5303
+- **Opensplating:** [https://github.com/X-AeroFusion-Group/opensplating](https://github.com/X-AeroFusion-Group/final-project/upload/main)
+- **U-net:** [https://github.com/X-AeroFusion-Group/u-net](https://github.com/fengxuemeng7-alt/Unet-course)
 
 Up to 3 members~
 ---
