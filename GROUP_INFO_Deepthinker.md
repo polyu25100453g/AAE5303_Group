@@ -31,4 +31,4 @@
 - **VO:** `module1_vo/`
 - **3D reconstruction (OpenSplat):** `module2_reconstruction/`
 - **Semantic segmentation — U-Net (course demo):** `module3_U-net/`
-- **Semantic segmentation — DeepLab + UAVScenes 26-class pipeline:** `module3_segmentation/` — see `module3_segmentation/RUN.md`
+- **Slides:** `https://github.com/polyu25100453g/AAE5303_Group/blob/main/docs/AAE5303_Deepthinker_Group_project.pdf`
