@@ -27,7 +27,8 @@
 - **(individual) Assignment 2:** [https://github.com/xinyan-web/Shenxinyan-assignment2_orbslam3_demo-]
 
 ## Group Projects
-- **(group) Final project:** [GitHub repo link]
-- **VO:** [GitHub repo link]
-- **Opensplating:** [GitHub repo link]
-- **U-net:** [GitHub repo link]
+- **(group) Final project:** https://github.com/polyu25100453g/AAE5303_Group
+- **VO:** https://github.com/polyu25100453g/AAE5303_Group/tree/main/module1_vo
+- **3D reconstruction (OpenSplat):** https://github.com/polyu25100453g/AAE5303_Group/tree/main/module2_reconstruction
+- **Semantic segmentation — U-Net (course demo):** https://github.com/polyu25100453g/AAE5303_Group/tree/main/module3_U-net
+- **Slides:** https://github.com/polyu25100453g/AAE5303_Group/blob/main/docs/AAE5303_Deepthinker_Group_project.pdf
