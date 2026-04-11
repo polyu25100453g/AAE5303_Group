@@ -31,4 +31,4 @@
 - **VO:** `module1_vo/`
 - **3D reconstruction (OpenSplat):** `module2_reconstruction/`
 - **Semantic segmentation — U-Net (course demo):** `module3_U-net/`
-- **Slides:** `https://github.com/polyu25100453g/AAE5303_Group/blob/main/docs/AAE5303_Deepthinker_Group_project.pdf`
+- **Slides:** https://github.com/polyu25100453g/AAE5303_Group/blob/main/docs/AAE5303_Deepthinker_Group_project.pdf
