@@ -23,7 +23,7 @@ Error:Success
 - **Name:** FU Xiaohe
 - **Brief Introduction:** freshman
 - **(individual) Assignment 1:** https://github.com/box717/PolyU-AAE5303-assignment-1
-- **(individual) Assignment 2:** https://github.com/box717/PolyU-AAE5303-assignment-2
+- **(individual) Assignment 2:** https://github.com/box717/AAE5303_assignment2_orbslam3_demo.git
 ### ❌ Member 2
 - **Student ID:** 25128553G
 - **Name:** WANG Ruipu
@@ -39,10 +39,11 @@ Error:Success
 - **(individual) Assignment 2:** https://github.com/billyTryToCode/assignment2
 
 ## Group Projects
-- **(group) Final project:** https://github.com/box717/final-project
-- **VO:** https://github.com/box717
-- **Opensplating:** https://github.com/LancerPu
+- **(group) Final project:** 
+- **VO:** 
+- **Opensplating:** https://github.com/box717/OpenSplat.git
 - **U-net:** https://github.com/billyTryToCode
+- **Slides:** https://github.com/Tong-Yuru/AAE5303-404_FOUND_Presentation
 
 Up to 3 members~
 ---
