@@ -36,13 +36,10 @@ As it going, only me.
 - **Opensplating:** https://github.com/ReiSei0824/AAE5303-GroupProject/tree/OpenSplatting
 - **U-net:** https://github.com/ReiSei0824/AAE5303-GroupProject/tree/U-Net
 - **Slides:** https://github.com/ReiSei0824/AAE5303-GroupProject/tree/Slides
+- **Recording:** https://github.com/ReiSei0824/AAE5303-GroupProject/tree/Recording
 ```
 
-## 🎉 Ready to Create?
 
-Go ahead and open `GROUP_INFO_demo.md` and start creating your masterpiece! 
-
-**Remember: Be creative, be yourself, and most importantly - have fun!** 🎊✨
 
 ---
 
